@@ -301,10 +301,10 @@ function id2stats(playerid, boxscore, batter=true, use_regress=true, home=true){
 }
 
 //TODO if pitcher is pitching, set current batter
-$.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/master/pitchers_projections_2020.json`, 
+$.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/master/projections/pitcher_Steamer.json`, 
 	function(p){
 		PITCHER_PROJECTIONS = JSON.parse(p);
-		$.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/master/batters_projections_2020.json`, 
+		$.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/master/projections/batter_Steamer.json`, 
 			function(b){
 				BATTER_PROJECTIONS = JSON.parse(b);
 				main();
