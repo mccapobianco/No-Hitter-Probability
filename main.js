@@ -72,6 +72,7 @@ function main(){
 					}
 				}
 			}
+			// dummy_display()
 		});
 }
 
@@ -122,10 +123,6 @@ function boxscore2link(boxscore){
 	return `https://www.mlb.com/gameday/${gameday}`;
 }
 
-function sum_baserunners(bStats){
-	return bStats.runs+bStats.caughtStealing+bStats.pickoffs+bStats.groundIntoDoublePlay+2*bStats.groundIntoTriplePlay+bStats.leftOnBase
-}
-
 function perfect_status(game){
 		if (game.status.is_perfect_game == "Y"){
 			return {"Y":true, "N":false};
@@ -172,12 +169,10 @@ function calculate_pg(boxscore, known=true, home=true){
 function calculate_nh(boxscore, home=true){
 	var bStats = home ? boxscore.teams.away.teamStats.batting : boxscore.teams.home.teamStats.batting;
 	var pStats = home ? boxscore.teams.home.teamStats.pitching : boxscore.teams.away.teamStats.pitching;
-	var baserunners = sum_baserunners(bStats);
 	var IP = pStats.inningsPitched;
 	IP = Math.floor(IP)+(IP-Math.floor(IP))/0.3;
 	var outs_pitched = Math.round(3*IP);
 	var outs_rem = 27-outs_pitched;
-	var due_up = (IP*3+baserunners)%9;
 	var xlineup = xStats_lineup(boxscore, home);
 	var array = [];
 	var max_walks = 32;
@@ -191,7 +186,7 @@ function calculate_nh(boxscore, home=true){
 	array[0][0] = 1;
 	for (var outs = 0; outs < outs_rem; outs++){
 		for (var runners = 0; runners < max_walks; runners++){
-			var current_batter = xlineup[Math.round(outs+runners+due_up)%9];
+			var current_batter = xlineup[(outs+bStats.plateAppearances)%9];
 			var outcomes = stats2outcomes(current_batter.avg, current_batter.obp);
 			array[outs+1][runners] += array[outs][runners]*outcomes.Out;
 			array[outs][runners+1] += array[outs][runners]*outcomes.BB;
@@ -254,9 +249,7 @@ function log5(x, y, l_avg){
 }
 
 function regress(val, mean, pa, C=500){
-	if (pa > C)
-		return val;
-	return (val*pa+mean*(C-pa))/C;
+	return (val*pa + mean*C)/(pa+C)
 }
 
 //a lineup's expected performance level against a certain pitcher
@@ -274,7 +267,7 @@ function xStats_lineup(boxscore, home=true){ //lineup is array of dicts {avg:x, 
 			var obp = log5(batter.obp, pitcher.obp, LEAGUE_OBP)
 			if (pitcher.atBats == 0){
 				avg = LEAGUE_AVG;
-				bb = LEAGUE_OBP	-LEAGUE_AVG;
+				bb = LEAGUE_OBP	- LEAGUE_AVG;
 			} //TODO fix
 			xlineup.push({'avg':avg, 'obp':avg+bb+2*(1-LEAGUE_FLD)});
 		}
@@ -300,7 +293,6 @@ function id2stats(playerid, boxscore, batter=true, use_regress=true, home=true){
 	return player;
 }
 
-//TODO if pitcher is pitching, set current batter
 $.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/master/projections/pitcher_Steamer.json`, 
 	function(p){
 		PITCHER_PROJECTIONS = JSON.parse(p);
