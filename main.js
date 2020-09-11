@@ -186,7 +186,7 @@ function calculate_nh(boxscore, home=true){
 	array[0][0] = 1;
 	for (var outs = 0; outs < outs_rem; outs++){
 		for (var runners = 0; runners < max_walks; runners++){
-			var current_batter = xlineup[(outs+bStats.plateAppearances)%9];
+			var current_batter = xlineup[(outs+runners+bStats.plateAppearances)%9];
 			var outcomes = stats2outcomes(current_batter.avg, current_batter.obp);
 			array[outs+1][runners] += array[outs][runners]*outcomes.Out;
 			array[outs][runners+1] += array[outs][runners]*outcomes.BB;
@@ -300,4 +300,7 @@ $.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/mast
 			function(b){
 				BATTER_PROJECTIONS = JSON.parse(b);
 				main();
-});});
+	});
+});
+
+//TODO double plays, caught stealing, extra innings, runs scored
