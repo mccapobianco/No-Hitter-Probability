@@ -123,6 +123,10 @@ function boxscore2link(boxscore){
 	return `https://www.mlb.com/gameday/${gameday}`;
 }
 
+function sum_baserunners(bStats){
+	return bStats.runs+bStats.caughtStealing+bStats.pickoffs+bStats.groundIntoDoublePlay+2*bStats.groundIntoTriplePlay+bStats.leftOnBase;
+}
+
 function perfect_status(game){
 		if (game.status.is_perfect_game == "Y"){
 			return {"Y":true, "N":false};
