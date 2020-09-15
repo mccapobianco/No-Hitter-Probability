@@ -1,6 +1,6 @@
 const LEAGUE_AVG = 0.240;
 const LEAGUE_OBP = 0.320;
-const LEAGUE_FLD = 0.98
+const LEAGUE_FLD = 0.985
 var BATTER_PROJECTIONS = {}
 var PITCHER_PROJECTIONS = {}
 var GAME_2s = []
@@ -203,8 +203,13 @@ function calculate_nh(boxscore, home=true){
 	return prob;
 }
 
+function hit_rate(avg, obp){
+	return avg*(1-obp)/(1-avg)
+}
+
 function stats2outcomes(avg, obp){
-	return {"Out":1-obp, "BB":obp-avg}
+	phit = hit_rate(avg, obp)
+	return {"Out":1-obp, "BB":obp-phit}
 }	
 
 function parse_percent(decimal){
@@ -267,13 +272,13 @@ function xStats_lineup(boxscore, home=true){ //lineup is array of dicts {avg:x, 
 		for (var i = 0; i < 9; i++){
 			var batter = id2stats(lineup_ids[i], boxscore, true, true, home);
 			var avg = log5(batter.avg, pitcher.avg, LEAGUE_AVG);
-			var bb = log5(batter.obp-batter.avg, pitcher.obp-pitcher.avg, LEAGUE_OBP-LEAGUE_AVG);
+			var bb = log5(batter.obp-hit_rate(batter.avg, batter.obp), pitcher.obp-hit_rate(pitcher.avg, pitcher.obp), LEAGUE_OBP-hit_rate(LEAGUE_AVG, LEAGUE_OBP));
 			var obp = log5(batter.obp, pitcher.obp, LEAGUE_OBP)
 			if (pitcher.atBats == 0){
 				avg = LEAGUE_AVG;
-				bb = LEAGUE_OBP	- LEAGUE_AVG;
+				bb = LEAGUE_OBP	- hit_rate(LEAGUE_AVG, LEAGUE_OBP);
 			} //TODO fix
-			xlineup.push({'avg':avg, 'obp':avg+bb+2*(1-LEAGUE_FLD)});
+			xlineup.push({'avg':avg, 'obp':avg+bb+(1-LEAGUE_FLD)});
 		}
 		return xlineup;
 }
