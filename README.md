@@ -14,9 +14,8 @@ The probability of a perfect game is the probability that all remaining batters 
 
 The probability of a no-hitter is a bit more complex. There is a chance of a no-hitter with 0 baserunners, with 1 baserunners, with 2 baserunners, etc. For a no-hitter with _n_ baserunners, there are _27^n_ permutations for the order of outs and baserunners. To account for every possibility, the program uses a 2D-array. The row number represents the number of outs and the column number represents the number of baserunners. The table is limited to 32 columns, and he first column and row have an index of 0. Although more baserunners are theoretically possible, the probability of this is so small that it is negligible. The notation `array[X][Y]` repesents the cell in row _X_ and column _Y_. The value in `array[X][Y]` is the probability that the game reaches _X_ outs with no hits and _Y_ baserunners. The array is initialized by setting the cell representing the current situation equal to 1. Then, values are passed from cell to cell. Iteratively set cells using the following formulas:
 
-![](https://latex.codecogs.com/png.latex?array[x][y]=array[x][y]+array[x-1][y]*\pi^{(x+y-1)\pmod9+1}_{'out%25'}(xlineup))
-
-![](https://latex.codecogs.com/png.latex?array[x][y]=array[x][y]+array[x][y-1]*\pi^{(x+y-1)\pmod9+1}_{'bb%25'}(xlineup))
+- ![](https://latex.codecogs.com/png.latex?array[x][y]=array[x][y]+array[x-1][y]*\pi^{(x+y-1)\pmod9+1}_{'out%25'}(xlineup))
+- ![](https://latex.codecogs.com/png.latex?array[x][y]=array[x][y]+array[x][y-1]*\pi^{(x+y-1)\pmod9+1}_{'bb%25'}(xlineup))
 
 
 Below is an example of an array with 2 rows and 2 columns, where `Out%`=0.7 and `BB%`=0.1:
@@ -53,6 +52,7 @@ The following aspects are not currently considered in the calculations, but coul
 - Team specific fielding percentage
 - Count-adjusted statistics
 - Other head-to-head formulas
+- "Hot/Cold" (e.g. if a pitcher hasn't allowed a hit through 7 innings, they are likely performing better than their average, but the calculation uses their season averages)
 
 I also plan to add more detailed information to the user interface, including:
 - Pitcher name
