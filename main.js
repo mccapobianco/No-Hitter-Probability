@@ -54,8 +54,8 @@ function main(){
 					let base_state = Object.keys(game.runners_on_base);
 					let bases = 1*base_state.includes('runner_on_1b')+2*base_state.includes('runner_on_2b')+4*base_state.includes('runner_on_3b');
 					let outs = game.status.o;
-					let home_icon = top ? `<img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> ` : "";
-					let away_icon = top ? "" : `<img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> `;
+					let home_icon = top ? ` <img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> ` : "";
+					let away_icon = top ? "" : ` <img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> `;
 					if (game.game_nbr===2){
 						GAME_2s.push(home);
 						GAME_2s.push(away);
@@ -147,7 +147,7 @@ function display_boxscore(home, odds, boxscore, icon, inning){
 	let score = `${teamStats.batting.runs}-${teamStats.pitching.runs}`;
 	let ip = teamStats.pitching.inningsPitched;
 	let link = boxscore2link(boxscore);
-	let str = `${team} (${pdetails.name} <a href=${link}>${symbol}${opponent}</a>)- ${score} | NH: ${parse_percent(odds.nh)} | PG: ${parse_percent(odds.pg)} [ ${inning} ${icon}]`;
+	let str = `${team} (${pdetails.name} <a href=${link}>${symbol}${opponent}</a>)- No-hitter: ${parse_percent(odds.nh)} | Perfect game: ${parse_percent(odds.pg)} [${score}, ${inning}${icon}]`;
 	if (odds.nh == 1)
 		str = `<b>${str}</b>`;
 	document.getElementById(team).innerHTML = str;
@@ -177,7 +177,7 @@ function display_game(home, odds, game, icon=""){
 			let top = game.status.top_inning == 'Y' ? 'Top' : 'Bottom';
 			status = `${top} ${game.status.inning}`;
 		}
-		let str = `${team} (<a href=${link}>${symbol}${opponent}</a>)- ${score} | NH: ${parse_percent(odds.nh)} | PG: ${parse_percent(odds.pg)} [ ${status} ${icon} ]`;
+		let str = `${team} (<a href=${link}>${symbol}${opponent}</a>)- No-hitter: ${parse_percent(odds.nh)} | Perfect game: ${parse_percent(odds.pg)} [${score}, ${status}${icon}]`;
 		document.getElementById(team).innerHTML = str;
 	}
 }
