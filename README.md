@@ -1,6 +1,6 @@
 # No-Hitter-Probability
 
-:baseball: [See this project on GitHub pages](https://mccapobianco.github.io/No-Hitter-Probability/) :baseball:
+[See this project on GitHub pages](https://mccapobianco.github.io/No-Hitter-Probability/)
 
 The data used to make these calculations is obtained from 2 APIs: [MLB Gameday](https://gd2.mlb.com/components/game/mlb/) and [MLB Stats API](https://statsapi.mlb.com/). The data is used to create a list of batting averages and on-base percentages that the batters are expected to have against the current pitcher. This list will be refered to as the `xlineup` and represented by a list of nine ordered pairs, where the values in each pair are `Out%` (the percent of plate appearances resulting in outs) and `BB%` (the percent of plate appearance resulting in walks). For simplicity, a _HBP_ is considered a type of _BB_ The notation ![](https://latex.codecogs.com/png.latex?\pi^n_m(xlineup)) represents the _m_ statistic of the _nth_ batter. The number of outs remaining and the current or due-up batter are also important pieces of data.
 
