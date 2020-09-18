@@ -48,13 +48,14 @@ body {font-family: Arial;}
 var link = 'https://en.wikipedia.org/w/api.php?action=parse&page=List_of_Major_League_Baseball_no-hitters&prop=text&formatversion=2&format=json'
 var no_hitters = [];
 var perfect_games = [];
+var team_no_hitters = [];
 var pages = document.getElementsByClassName("page");
 function main(){
 	$.get(`https://cors-anywhere.herokuapp.com/${link}`, 
 		function(p){
 			var text = p.parse.text
 			var table = $(text).find('table')[1];
-			var rows = $(table).find('tr')
+			var rows = $(table).find('tr');
 			$(rows).each(function() {
 				let obj = {}
 				let row = $(this).find('td,th')
@@ -67,9 +68,9 @@ function main(){
 					let pitchers = [];
 					$(row[2]).find('a').each(function(){pitchers.push($(this).text())});
 					obj.pitcher = pitchers.length == 1 ? pitchers[0] : pitchers;
-					obj.team = $(row[3]).text();
+					obj.team = $($(row[3]).find('a')[0]).text();
 					obj.score = $(row[4]).text();
-					obj.oppTeam = $(row[5]).text();
+					obj.oppTeam = $($(row[5]).find('a')[0]).text();
 					obj.oppScore = $(row[6]).text();
 					obj.league = $(row[7]).text();
 					let catchers = [];
@@ -81,10 +82,15 @@ function main(){
 					if (perfect)
 						perfect_games.push(obj);
 				}
-			
-		});
+			});
+			var teamTable = $(text).find('table')[2];
+			var teamRows = $(teamTable).find('tr');
+			$(teamRows).each(function() {
+				let tRow = $(this).find('td');
+				team_no_hitters.push({'y':parseInt($(tRow[0]).text()), 'label':$(tRow[1]).text()});
+			});
 			/**********************INITIAL GRAPH*****************************/
-			hof(no_hitters, perfect_games);
+			team(no_hitters, perfect_games);
 	});
 }
 
@@ -139,7 +145,7 @@ function hof(nh, pg){
 function hof_graph(data, type){
 	var chart = new CanvasJS.Chart(`${type} HOF`, {
 		animationEnabled: true,
-		title:{text:`${type} by Hall-of-Famers`},
+		title:{text:`${type}s by Hall-of-Famers`},
 		data: [{type: "pie", startAngle:240, yValueFormatString:"##0.00\"%\"", indexLabel:"{label} {y}", dataPoints:data}]
 	});
 	chart.render();
@@ -155,6 +161,41 @@ function hof_data(input){
 	return [{"label":"HOF", "y":100*n/total},{"label":"Non-HOF", "y":100-100*n/total}]
 }
 
+function team(nh, pg){
+	show_page('team'); 
+	team_graph(team_no_hitters, 'No-hitter');
+	team_graph(team_data(pg), 'Perfect Game');
+}
+
+function team_graph(data, type){
+	var chart = new CanvasJS.Chart(`${type} team`, {
+		animationEnabled: true,
+		title:{text:`${type}s by Team`},
+		axisX:{interval: 1,title:"Team", labelFontSize:7.5},
+		axisY:{title:"Count", interval:1},
+		data: [{type: "column",name: "team", axisYType: "primary",dataPoints: data}]
+	});
+	chart.render();
+}
+
+function team_data(input){
+	console.log(input)
+	let data = {};
+	let total = input.length;
+	for (let i=0; i < total; i++){
+		if (data[input[i].team] === undefined)
+			data[input[i].team] = 0;
+		data[input[i].team] += 1;
+	}
+	let output = [];
+	let keys = Object.keys(data);
+	console.log(keys)
+	for (let i = 0; i < keys.length; i++){
+		output.push({'y':data[keys[i]], 'label':keys[i]});
+	}
+	return output
+}
+
 
 window.onload = main()
 </script>
@@ -162,6 +203,7 @@ window.onload = main()
 <body style="height: 100%">
 	<div class="tab">
   <button class="tablinks" onclick="yearly(no_hitters, perfect_games)">Yearly</button>
+  <button class="tablinks" onclick="team(no_hitters, perfect_games)">Team</button>
   <button class="tablinks" onclick="hof(no_hitters, perfect_games)">Hall-of-Fame</button>
 </div>
 	<div id="yearly" class="page" style="height:90%; width:100%; display:none;">
@@ -171,6 +213,10 @@ window.onload = main()
 	<div id="HOF" class="page" style="height:90%; width:100%; display:none;">
 		<div id="No-hitter HOF" style="height: 40vh; width: 100%;"></div>
 		<div id="Perfect Game HOF" style="height: 40vh; width: 100%;"></div>
+	</div>
+	<div id="team" class="page" style="height:90%; width:100%; display:none;">
+		<div id="No-hitter team" style="height: 40vh; width: 100%;"></div>
+		<div id="Perfect Game team" style="height: 40vh; width: 100%;"></div>
 	</div>
 
 
