@@ -5,6 +5,7 @@ const AUTO_REFRESH = 10000;
 var BATTER_PROJECTIONS = {};
 var PITCHER_PROJECTIONS = {};
 var INTERVAL;
+
 function today(){
 	let today = new Date();
 	today.setMinutes(today.getMinutes() + (-12*60+today.getTimezoneOffset())); //normalize timezone
@@ -22,6 +23,8 @@ function today_link(){
 function PP(home, game){
 	let ha = home ? "home" : "away";
 	let pp = game[`${ha}_probable_pitcher`];
+	if (pp.id == "")
+		return "TBD";
 	return `${pp.first} ${pp.last}`;
 }
 
