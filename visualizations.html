@@ -2,13 +2,54 @@
 <script language="JavaScript" type="text/javascript" src="./jquery-3.5.1.min.js"></script>
 <!-- <script src="visualizations.js"></script> -->
 <html>
-<head>  
+<head> 
+<style>
+body {font-family: Arial;}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  height:5vh;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 7px 8px;
+  transition: 0.1s;
+  font-size: 16px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+</style> 
 <script>
 var link = 'https://en.wikipedia.org/w/api.php?action=parse&page=List_of_Major_League_Baseball_no-hitters&prop=text&formatversion=2&format=json'
 var no_hitters = [];
 var perfect_games = [];
-
-function main(fchart, fdata){
+var pages = document.getElementsByClassName("page");
+function main(){
 	$.get(`https://cors-anywhere.herokuapp.com/${link}`, 
 		function(p){
 			var text = p.parse.text
@@ -42,31 +83,43 @@ function main(fchart, fdata){
 				}
 			
 		});
-			/**********************DO STUFF HERE*****************************/
-			line_graph(line_data(no_hitters), 'No-hitter');
-			line_graph(line_data(perfect_games), 'Perfect Game')
+			/**********************INITIAL GRAPH*****************************/
+			hof(no_hitters, perfect_games);
 	});
 }
 
-function line_graph(data, type) {
-	var chart = new CanvasJS.Chart(`${type} line`, {
+function show_page(page){
+	for (let i = 0; i < pages.length; i++){
+		pages[i].style.display = "none";
+	}
+	document.getElementById(page).style.display = "block";
+
+}
+
+function yearly(nh, pg){
+	show_page('yearly');
+	yearly_graph(yearly_data(nh), 'No-hitter');
+	yearly_graph(yearly_data(pg), 'Perfect Game')
+}
+
+function yearly_graph(data, type) {
+	var chart = new CanvasJS.Chart(`${type} yearly`, {
 		animationEnabled: true,
 		title:{text:`${type}s by Year`},
 		axisX:{interval: 10,title:"Year"},
 		axisY:{title:"Count"},
-		data: [{type: "line",name: "year",axisYType: "primary",color: "#014D65",dataPoints: data}]
+		data: [{type: "line",name: "year",axisYType: "primary",dataPoints: data}]
 	});
 	chart.render();
 }
 
-function line_data(no_hitters){
+function yearly_data(input){
 	let data = {};
 	for (let i = 1875; i <= (new Date()).getFullYear(); i++){
 		data[i] = 0
 	}
-	for (let i = 0; i < no_hitters.length; i++){
-		let nono = no_hitters[i];
-		let year = nono.date.getFullYear();
+	for (let i = 0; i < input.length; i++){
+		let year = input[i].date.getFullYear();
 		data[year] += 1;
 	}
 	let output = [];
@@ -77,13 +130,50 @@ function line_data(no_hitters){
 	return output;
 }
 
+function hof(nh, pg){
+	show_page('HOF');
+	hof_graph(hof_data(nh), 'No-hitter');
+	hof_graph(hof_data(pg), 'Perfect Game');
+}
 
-window.onload = main(line_graph, line_data)
+function hof_graph(data, type){
+	var chart = new CanvasJS.Chart(`${type} HOF`, {
+		animationEnabled: true,
+		title:{text:`${type} by Hall-of-Famers`},
+		data: [{type: "pie", startAngle:240, yValueFormatString:"##0.00\"%\"", indexLabel:"{label} {y}", dataPoints:data}]
+	});
+	chart.render();
+}
+
+function hof_data(input){
+	let n = 0;
+	let total = input.length;
+	for (let i=0; i < total; i++){
+		if (input[i].hof)
+			n += 1;
+	}
+	return [{"label":"HOF", "y":100*n/total},{"label":"Non-HOF", "y":100-100*n/total}]
+}
+
+
+window.onload = main()
 </script>
 </head>
 <body style="height: 100%">
-<div id="No-hitter line" style="height: 45vh; width: 100%;"></div>
-<div id="Perfect Game line" style="height: 45vh; width: 100%;"></div>
+	<div class="tab">
+  <button class="tablinks" onclick="yearly(no_hitters, perfect_games)">Yearly</button>
+  <button class="tablinks" onclick="hof(no_hitters, perfect_games)">Hall-of-Fame</button>
+</div>
+	<div id="yearly" class="page" style="height:90%; width:100%; display:none;">
+		<div id="No-hitter yearly" style="height: 40vh; width: 100%;"></div>
+		<div id="Perfect Game yearly" style="height: 40vh; width: 100%;"></div>
+	</div>
+	<div id="HOF" class="page" style="height:90%; width:100%; display:none;">
+		<div id="No-hitter HOF" style="height: 40vh; width: 100%;"></div>
+		<div id="Perfect Game HOF" style="height: 40vh; width: 100%;"></div>
+	</div>
+
+
 TODO: more visualizations
 <script src="canvasjs.min.js"></script>
 </body>
