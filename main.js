@@ -1,9 +1,10 @@
 const LEAGUE_AVG = 0.240;
 const LEAGUE_OBP = 0.320;
 const LEAGUE_FLD = 0.985;
+const AUTO_REFRESH = 10000;
 var BATTER_PROJECTIONS = {};
 var PITCHER_PROJECTIONS = {};
-
+var INTERVAL;
 function today(){
 	let today = new Date();
 	today.setMinutes(today.getMinutes() + (-12*60+today.getTimezoneOffset())); //normalize timezone
@@ -328,6 +329,21 @@ function combined(boxscore, home) {
 	return pitchers.length > 1;
 }
 
+function on_pause_click(){
+	clearInterval(INTERVAL);
+	var style = document.getElementById('pause').style.display;
+	document.getElementById('pause').style.display = 'none';
+	document.getElementById('continue').style.display = 'inline';
+	document.getElementById('refresh_label').innerHTML = '* <b>PAUSED.</b> This page will auto-update every 10 seconds.'
+}
+
+function on_continue_click(){
+	document.getElementById('pause').style.display = 'inline';
+	document.getElementById('continue').style.display = 'none';
+	document.getElementById('refresh_label').innerHTML = '* This page will auto-update every 10 seconds.'
+	INTERVAL = setInterval(main, AUTO_REFRESH);
+}
+
 $.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/master/projections/pitcher_Steamer.json`, 
 	function(p){
 		PITCHER_PROJECTIONS = JSON.parse(p);
@@ -335,7 +351,10 @@ $.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/mast
 			function(b){
 				BATTER_PROJECTIONS = JSON.parse(b);
 				main();
-	});
-});
+				INTERVAL = setInterval(main, AUTO_REFRESH);
+			}
+		);
+	}
+);
 
 //TODO double plays, caught stealing, extra innings, runs scored

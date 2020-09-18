@@ -4,7 +4,7 @@
 <head>
 	<title>No-Hitter Probability</title>
 	<meta name="Author" content="Michael Capobianco">
-	<meta id="refresh" http-equiv="refresh" content="60"/>
+	<!-- <meta id="refresh" http-equiv="refresh" content="60"/> -->
 </head>
 <style>
 	html {
@@ -26,6 +26,11 @@
 	}
 	hr {
 		padding:0;
+	}
+	input, label{
+		display: inline-block;
+		vertical-align: middle;
+		margin: 10px 0;
 	}
 </style>
 <body>
@@ -95,7 +100,11 @@
 			<td id="WSH">WSH- No game</td>
 		</tr>
 	</table>
-	<p>*page refreshes automatically every 60 seconds</p>
+	<br>
+	<br>
+	<label id="refresh_label">* This page will auto-update every 10 seconds.</label>
+	<button id="pause" onclick="on_pause_click()">Click Here to Pause</button>
+	<button id="continue" style="display:none" onclick="on_continue_click()">Click Here to Resume</button>
 	<hr>
 	<center>
 		Author: Michael Capobianco
