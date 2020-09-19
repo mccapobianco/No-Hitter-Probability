@@ -255,6 +255,39 @@ function recent_data(input){
 	return data;
 }
 
+function month(nh, pg){
+	show_page('month');
+	month_graph(month_data(nh), 'No-hitter');
+	month_graph(month_data(pg), 'Perfect Game');
+}
+
+function month_graph(data, type){
+	var chart = new CanvasJS.Chart(`${type} month`, {
+		animationEnabled: true,
+		title:{text:`${type}s by Month`},
+		data: [{type: "pie", startAngle:240, indexLabel:"{label} {y}", dataPoints:data}]
+	});
+	chart.render();
+}
+
+function month_data(input){
+	let months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+	let data = {}
+	for (let i=0; i<12; i++)
+		data[i] = 0
+	let total = input.length;
+	for (let i=0; i < total; i++){
+		data[input[i].date.getMonth()] += 1
+	}
+	let output = [];
+	console.log(data)
+	for (let i=0; i<12; i++){
+		if (data[i] > 0)
+			output.push({"label":months[i], "y":data[i]});
+	}
+	return output;
+}
+
 window.onload = main()
 
 </script>
@@ -265,6 +298,7 @@ window.onload = main()
   <button class="tablinks" id="team_button"  onclick="team(no_hitters, perfect_games)">Team</button>
   <button class="tablinks" id="recent_button"  onclick="recent(no_hitters, perfect_games)">Recent</button>
   <button class="tablinks" id="HOF_button"  onclick="hof(no_hitters, perfect_games)">Hall-of-Fame</button>
+  <button class="tablinks" id="month_button"  onclick="month(no_hitters, perfect_games)">Month</button>
   <button class="tablinks" id="return_button"  onclick="location.href='index.html'">Return to Main Page</button>
 </div>
 	<div id="yearly" class="page" style="height:90%; width:100%; display:none;">
@@ -289,6 +323,10 @@ window.onload = main()
 					<th>Last No-hitter Against</th><th>Last Perfect Game Against</th>
 				</tr>
 			</thead><tbody></tbody></table>
+	</div>
+	<div id="month" class="page" style="height:90%; width:100%; display:none;">
+		<div id="No-hitter month" style="height: 40vh; width: 100%;"></div>
+		<div id="Perfect Game month" style="height: 40vh; width: 100%;"></div>
 	</div>
 
 <script src="canvasjs.min.js"></script>
