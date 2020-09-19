@@ -12,6 +12,7 @@ body {font-family: Arial;}
   border: 1px solid #ccc;
   background-color: #f1f1f1;
   height:5vh;
+  width: 100%;
 }
 
 /* Style the buttons inside the tab */
@@ -36,13 +37,17 @@ body {font-family: Arial;}
   background-color: #ccc;
 }
 
-/* Style the tab content */
-.tabcontent {
-  display: none;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-top: none;
+table, td, th {
+  border-collapse: collapse;
+  border: 1px solid black;
 }
+
+/*tr:nth-child(odd) {background-color: #f2f2f2;}*/
+th {
+	background-color: #aaaaaa;
+}
+
+
 </style> 
 <script>
 var link = 'https://en.wikipedia.org/w/api.php?action=parse&page=List_of_Major_League_Baseball_no-hitters&prop=text&formatversion=2&format=json'
@@ -50,6 +55,9 @@ var no_hitters = [];
 var perfect_games = [];
 var team_no_hitters = [];
 var pages = document.getElementsByClassName("page");
+var tablinks = document.getElementsByClassName("tablinks");
+var active_teams = [];
+
 function main(){
 	$.get(`https://cors-anywhere.herokuapp.com/${link}`, 
 		function(p){
@@ -87,10 +95,12 @@ function main(){
 			var teamRows = $(teamTable).find('tr');
 			$(teamRows).each(function() {
 				let tRow = $(this).find('td');
+				if ($(tRow[1]).find('i').length == 0 && $(tRow[1]).text().length > 0)
+					active_teams.push($(tRow[1]).text().split(' (')[0].replace('\n',''));
 				team_no_hitters.push({'y':parseInt($(tRow[0]).text()), 'label':$(tRow[1]).text()});
 			});
 			/**********************INITIAL GRAPH*****************************/
-			team(no_hitters, perfect_games);
+			yearly(no_hitters, perfect_games);
 	});
 }
 
@@ -98,6 +108,10 @@ function show_page(page){
 	for (let i = 0; i < pages.length; i++){
 		pages[i].style.display = "none";
 	}
+	for (i = 0; i < tablinks.length; i++) {
+		tablinks[i].className = tablinks[i].className.replace(" active", "");
+	}
+	document.getElementById(`${page}_button`).className += " active";
 	document.getElementById(page).style.display = "block";
 
 }
@@ -171,7 +185,7 @@ function team_graph(data, type){
 	var chart = new CanvasJS.Chart(`${type} team`, {
 		animationEnabled: true,
 		title:{text:`${type}s by Team`},
-		axisX:{interval: 1,title:"Team", labelFontSize:7.5},
+		axisX:{interval: 1,title:"Team"},
 		axisY:{title:"Count", interval:1},
 		data: [{type: "column",name: "team", axisYType: "primary",dataPoints: data}]
 	});
@@ -179,7 +193,6 @@ function team_graph(data, type){
 }
 
 function team_data(input){
-	console.log(input)
 	let data = {};
 	let total = input.length;
 	for (let i=0; i < total; i++){
@@ -189,22 +202,70 @@ function team_data(input){
 	}
 	let output = [];
 	let keys = Object.keys(data);
-	console.log(keys)
 	for (let i = 0; i < keys.length; i++){
 		output.push({'y':data[keys[i]], 'label':keys[i]});
 	}
 	return output
 }
 
+function recent(nh, pg){
+	show_page("recent");
+	let data = recent_data(nh);
+	let table = document.getElementById('recent_table');
+	let old = document.getElementsByTagName('tbody')[0];
+	let tbody = document.createElement('tbody');
+	let keys = Object.keys(data)
+	keys.sort();
+	for (let i=0; i<keys.length; i++){
+		let row = tbody.insertRow(i);
+		if (i%2 == 1)
+			row.style.backgroundColor = "#f2f2f2";
+		for (let j=0; j<5; j++){
+			let cell = row.insertCell(j);
+			if (j==0)
+				cell.innerHTML = keys[i];
+			else
+				cell.innerHTML = data[keys[i]][j-1];
+		}
+	}
+	table.replaceChild(tbody, old);
+}
+
+function recent_data(input){
+	var data = {}
+	for (let i=0; i<active_teams.length; i++){
+		data[active_teams[i]] = ["Never","Never","Never","Never"];
+	}
+	for (let i=0; i<input.length; i++){
+		let game = input[i];
+		let gamedate = game.date.toLocaleDateString("en-US");
+		if (data[game.team] != undefined){
+			data[game.team][0] = gamedate;
+			if (game.perfect){
+				data[game.team][1] = gamedate;
+			}
+		}
+		if (data[game.oppTeam] != undefined){
+			data[game.oppTeam][2] = gamedate;
+			if (game.perfect){
+				data[game.oppTeam][3] = gamedate;
+			}
+		}
+	}
+	return data;
+}
 
 window.onload = main()
+
 </script>
 </head>
 <body style="height: 100%">
 	<div class="tab">
-  <button class="tablinks" onclick="yearly(no_hitters, perfect_games)">Yearly</button>
-  <button class="tablinks" onclick="team(no_hitters, perfect_games)">Team</button>
-  <button class="tablinks" onclick="hof(no_hitters, perfect_games)">Hall-of-Fame</button>
+  <button class="tablinks" id="yearly_button" onclick="yearly(no_hitters, perfect_games)">Yearly</button>
+  <button class="tablinks" id="team_button"  onclick="team(no_hitters, perfect_games)">Team</button>
+  <button class="tablinks" id="recent_button"  onclick="recent(no_hitters, perfect_games)">Recent</button>
+  <button class="tablinks" id="HOF_button"  onclick="hof(no_hitters, perfect_games)">Hall-of-Fame</button>
+  <button class="tablinks" id="return_button"  onclick="location.href='index.html'">Return to Main Page</button>
 </div>
 	<div id="yearly" class="page" style="height:90%; width:100%; display:none;">
 		<div id="No-hitter yearly" style="height: 40vh; width: 100%;"></div>
@@ -218,9 +279,18 @@ window.onload = main()
 		<div id="No-hitter team" style="height: 40vh; width: 100%;"></div>
 		<div id="Perfect Game team" style="height: 40vh; width: 100%;"></div>
 	</div>
+	<div id="recent" class="page" style="height:90%; width:100%; display:none;">
+		<i>*may currently omit games in which a team had a different name</i>
+		<table id="recent_table" style="width:100%">
+			<thead>
+				<tr>
+					<th>Team</th>
+					<th>Last No-hitter</th><th>Last Perfect Game</th>
+					<th>Last No-hitter Against</th><th>Last Perfect Game Against</th>
+				</tr>
+			</thead><tbody></tbody></table>
+	</div>
 
-
-TODO: more visualizations
 <script src="canvasjs.min.js"></script>
 </body>
 </html>
