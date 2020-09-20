@@ -63,6 +63,8 @@ function main(){
 					let base_state = Object.keys(game.runners_on_base);
 					let bases = 1*base_state.includes('runner_on_1b')+2*base_state.includes('runner_on_2b')+4*base_state.includes('runner_on_3b');
 					let outs = game.status.o;
+					if (outs == 3)
+						outs = 2;
 					let home_icon = top ? ` <img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> ` : "";
 					let away_icon = top ? "" : ` <img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> `;
 					if (game.linescore.h.home > 0){
