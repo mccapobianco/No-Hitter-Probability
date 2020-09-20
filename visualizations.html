@@ -1,8 +1,9 @@
 <!DOCTYPE HTML>
 <script language="JavaScript" type="text/javascript" src="./jquery-3.5.1.min.js"></script>
-<!-- <script src="visualizations.js"></script> -->
 <html>
 <head> 
+	<title>No-Hitter Probability</title>
+	<meta name="author" content="Michael Capobianco">
 <style>
 body {font-family: Arial;}
 
@@ -99,8 +100,8 @@ function main(){
 					active_teams.push($(tRow[1]).text().split(' (')[0].replace('\n',''));
 				team_no_hitters.push({'y':parseInt($(tRow[0]).text()), 'label':$(tRow[1]).text()});
 			});
-			/**********************INITIAL GRAPH*****************************/
-			yearly(no_hitters, perfect_games);
+			/**********************INITIAL GRAPH**********************/
+			combined(no_hitters, perfect_games);
 	});
 }
 
@@ -280,10 +281,45 @@ function month_data(input){
 		data[input[i].date.getMonth()] += 1
 	}
 	let output = [];
-	console.log(data)
 	for (let i=0; i<12; i++){
 		if (data[i] > 0)
 			output.push({"label":months[i], "y":data[i]});
+	}
+	return output;
+}
+
+function combined(nh, pg){
+	show_page('combined');
+	combined_graph(combined_data(nh), 'No-hitter');
+	combined_graph(combined_data(pg), 'Perfect Game');
+}
+
+function combined_graph(data, type){
+	var chart = new CanvasJS.Chart(`${type} combined`, {
+		animationEnabled: true,
+		title:{text:`Number of Pitchers in a ${type}`},
+		axisX:{title:"Pitchers Used"},
+		axisY:{minimum:0, interval: 10**((data.length.toString()-2).length),title:"Count"},
+		data: [{type: "bar", startAngle:240, indexLabel:"{y}", dataPoints:data}]
+	});
+	chart.render();
+}
+
+function combined_data(input){
+	let data = {}
+	for (let i=0; i < input.length; i++){
+		let count = 1;
+		if (typeof(input[i].pitcher) == "object")
+			count = input[i].pitcher.length;
+		if (data[count] === undefined)
+			data[count] = 0;
+		data[count] += 1
+	}
+	let output = [];
+	let keys = Object.keys(data);
+	for (let i = 0; i < keys.length; i++){
+		let label = keys[i] == 1 ? " pitcher" : " pitchers"; 
+		output.push({"label":keys[i]+label, "y":data[keys[i]]})
 	}
 	return output;
 }
@@ -294,13 +330,16 @@ window.onload = main()
 </head>
 <body style="height: 100%">
 	<div class="tab">
-  <button class="tablinks" id="yearly_button" onclick="yearly(no_hitters, perfect_games)">Yearly</button>
-  <button class="tablinks" id="team_button"  onclick="team(no_hitters, perfect_games)">Team</button>
-  <button class="tablinks" id="recent_button"  onclick="recent(no_hitters, perfect_games)">Recent</button>
-  <button class="tablinks" id="HOF_button"  onclick="hof(no_hitters, perfect_games)">Hall-of-Fame</button>
-  <button class="tablinks" id="month_button"  onclick="month(no_hitters, perfect_games)">Month</button>
-  <button class="tablinks" id="return_button"  onclick="location.href='index.html'">Return to Main Page</button>
-</div>
+  <button class="tablinks" id="yearly_button" style="float:left" onclick="yearly(no_hitters, perfect_games)">Yearly</button>
+  <button class="tablinks" id="team_button" style="float:left" onclick="team(no_hitters, perfect_games)">Team</button>
+  <button class="tablinks" id="recent_button" style="float:left" onclick="recent(no_hitters, perfect_games)">Recent</button>
+  <button class="tablinks" id="HOF_button" style="float:left" onclick="hof(no_hitters, perfect_games)">Hall-of-Fame</button>
+  <button class="tablinks" id="month_button" style="float:left" onclick="month(no_hitters, perfect_games)">Month</button>
+  <button class="tablinks" id="combined_button" style="float:left" onclick="combined(no_hitters, perfect_games)">Combined</button>
+  <button class="tablinks" id="return_button" style="float:left" onclick="location.href='index.html'">Return to Main Page</button>
+  <button class="tablinks" id="wiki_button" style="float:right" onclick="location.href='https://en.wikipedia.org/wiki/List_of_Major_League_Baseball_no-hitters'">Data from Wikipedia</button>
+
+</div><div style="clear: both;"></div>
 	<div id="yearly" class="page" style="height:90%; width:100%; display:none;">
 		<div id="No-hitter yearly" style="height: 40vh; width: 100%;"></div>
 		<div id="Perfect Game yearly" style="height: 40vh; width: 100%;"></div>
@@ -327,6 +366,10 @@ window.onload = main()
 	<div id="month" class="page" style="height:90%; width:100%; display:none;">
 		<div id="No-hitter month" style="height: 40vh; width: 100%;"></div>
 		<div id="Perfect Game month" style="height: 40vh; width: 100%;"></div>
+	</div>
+	<div id="combined" class="page" style="height:90%; width:100%; display:none;">
+		<div id="No-hitter combined" style="height: 40vh; width: 100%;"></div>
+		<div id="Perfect Game combined" style="height: 40vh; width: 100%;"></div>
 	</div>
 
 <script src="canvasjs.min.js"></script>
