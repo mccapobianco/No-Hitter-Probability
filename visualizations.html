@@ -80,7 +80,7 @@ function main(){
 					obj.team = $($(row[3]).find('a')[0]).text();
 					obj.score = $(row[4]).text();
 					obj.oppTeam = $($(row[5]).find('a')[0]).text();
-					obj.oppScore = $(row[6]).text();
+					obj.oppScore = $(row[6]).text().replace("^","");
 					obj.league = $(row[7]).text();
 					let catchers = [];
 					$(row[8]).find('a').each(function(){catchers.push($(this).text())});
@@ -212,11 +212,13 @@ function team_data(input){
 function recent(nh, pg){
 	show_page("recent");
 	let data = recent_data(nh);
+	let label = document.getElementById('recent_label');
 	let table = document.getElementById('recent_table');
 	let old = document.getElementsByTagName('tbody')[0];
 	let tbody = document.createElement('tbody');
-	let keys = Object.keys(data)
+	let keys = active_teams;
 	keys.sort();
+	let most_recent = [];
 	for (let i=0; i<keys.length; i++){
 		let row = tbody.insertRow(i);
 		if (i%2 == 1)
@@ -230,6 +232,11 @@ function recent(nh, pg){
 		}
 	}
 	table.replaceChild(tbody, old);
+	label.innerHTML = `<br>${recent_label(data.nohitter, "No-hitter")}<br>${recent_label(data.perfectgame, "Perfect Game")}<br><br>`
+}
+
+function recent_label(info, type){
+	return `Most Recent ${type}: ${info.pitcher} (${info.team}) vs. ${info.opponent}: ${info.date}`;
 }
 
 function recent_data(input){
@@ -248,8 +255,11 @@ function recent_data(input){
 		}
 		if (data[game.oppTeam] != undefined){
 			data[game.oppTeam][2] = gamedate;
+			let pitcher = typeof(game.pitcher) == 'object' ? 'Combined' : game.pitcher;
+			data.nohitter = {'pitcher':pitcher, 'team':game.team, 'opponent':game.oppTeam, 'date':gamedate}
 			if (game.perfect){
 				data[game.oppTeam][3] = gamedate;
+				data.perfectgame = {'pitcher':pitcher, 'team':game.team, 'opponent':game.oppTeam, 'date':gamedate}
 			}
 		}
 	}
@@ -300,7 +310,7 @@ function combined_graph(data, type){
 		title:{text:`Number of Pitchers in a ${type}`},
 		axisX:{title:"Pitchers Used"},
 		axisY:{minimum:0, interval: 10**((data.length.toString()-2).length),title:"Count"},
-		data: [{type: "bar", startAngle:240, indexLabel:"{y}", dataPoints:data}]
+		data: [{type: "bar", indexLabel:"{y}", dataPoints:data}]
 	});
 	chart.render();
 }
@@ -324,6 +334,48 @@ function combined_data(input){
 	return output;
 }
 
+function rundiff(nh, pg){
+	show_page('rundiff');
+	rundiff_graph(rundiff_data(nh), 'No-hitter');
+	rundiff_graph(rundiff_data(pg), 'Perfect Game');
+}
+
+function rundiff_graph(data, type){
+	var chart = new CanvasJS.Chart(`${type} rundiff`, {
+		animationEnabled: true,
+		title:{text:`Run Differential in a ${type}`},
+		axisX:{title:"Run Differential", interval:1},
+		axisY:{minimum:0, interval: 10**((data.length.toString()-2).length),title:"Count"},
+		data: [{type: "column", indexLabel:"{y}", dataPoints:data}]
+	});
+	chart.render();
+}
+
+function rundiff_data(input){
+	let data = {};
+	let min = 0;
+	let max = 0;
+	for (let i=0; i < input.length; i++){
+		let diff = input[i].score - input[i].oppScore;
+		min = Math.min(min, diff);
+		max = Math.max(max, diff);
+		if (data[diff] === undefined)
+			data[diff] = 0;
+		data[diff] += 1
+	}
+	let output = [];
+	let keys = Object.keys(data);
+	console.log(data)
+	for (let i = min; i <= max; i++){
+		if (keys.includes(i.toString())){
+			output.push({"label":`${i}`, "y":data[i]})
+		} else {
+			output.push({"label":`${i}`, "y":0})
+		}
+	}
+	return output;
+}
+
 window.onload = main()
 
 </script>
@@ -333,6 +385,7 @@ window.onload = main()
   <button class="tablinks" id="yearly_button" style="float:left" onclick="yearly(no_hitters, perfect_games)">Yearly</button>
   <button class="tablinks" id="team_button" style="float:left" onclick="team(no_hitters, perfect_games)">Team</button>
   <button class="tablinks" id="recent_button" style="float:left" onclick="recent(no_hitters, perfect_games)">Recent</button>
+  <button class="tablinks" id="rundiff_button" style="float:left" onclick="rundiff(no_hitters, perfect_games)">Run Diff</button>
   <button class="tablinks" id="HOF_button" style="float:left" onclick="hof(no_hitters, perfect_games)">Hall-of-Fame</button>
   <button class="tablinks" id="month_button" style="float:left" onclick="month(no_hitters, perfect_games)">Month</button>
   <button class="tablinks" id="combined_button" style="float:left" onclick="combined(no_hitters, perfect_games)">Combined</button>
@@ -353,6 +406,7 @@ window.onload = main()
 		<div id="Perfect Game team" style="height: 40vh; width: 100%;"></div>
 	</div>
 	<div id="recent" class="page" style="height:90%; width:100%; display:none;">
+		<label id="recent_label"></label>
 		<i>*may currently omit games in which a team had a different name</i>
 		<table id="recent_table" style="width:100%">
 			<thead>
@@ -370,6 +424,10 @@ window.onload = main()
 	<div id="combined" class="page" style="height:90%; width:100%; display:none;">
 		<div id="No-hitter combined" style="height: 40vh; width: 100%;"></div>
 		<div id="Perfect Game combined" style="height: 40vh; width: 100%;"></div>
+	</div>
+	<div id="rundiff" class="page" style="height:90%; width:100%; display:none;">
+		<div id="No-hitter rundiff" style="height: 40vh; width: 100%;"></div>
+		<div id="Perfect Game rundiff" style="height: 40vh; width: 100%;"></div>
 	</div>
 
 <script src="canvasjs.min.js"></script>
