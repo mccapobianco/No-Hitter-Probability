@@ -78,7 +78,7 @@ function main(){
 					$(row[2]).find('a').each(function(){pitchers.push($(this).text())});
 					obj.pitcher = pitchers.length == 1 ? pitchers[0] : pitchers;
 					obj.team = $($(row[3]).find('a')[0]).text();
-					obj.score = $(row[4]).text();
+					obj.score = $(row[4]).text().replace("^","");
 					obj.oppTeam = $($(row[5]).find('a')[0]).text();
 					obj.oppScore = $(row[6]).text().replace("^","");
 					obj.league = $(row[7]).text();
@@ -365,7 +365,6 @@ function rundiff_data(input){
 	}
 	let output = [];
 	let keys = Object.keys(data);
-	console.log(data)
 	for (let i = min; i <= max; i++){
 		if (keys.includes(i.toString())){
 			output.push({"label":`${i}`, "y":data[i]})
