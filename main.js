@@ -59,14 +59,6 @@ function main(){
 					display(false, {"nh":away_nh, "pg":away_nh&&pg}, game);
 					display(true, {"nh":home_nh, "pg":home_nh&&pg}, game);
 				} else {
-					let top = game.status.top_inning == 'Y';
-					let base_state = Object.keys(game.runners_on_base);
-					let bases = 1*base_state.includes('runner_on_1b')+2*base_state.includes('runner_on_2b')+4*base_state.includes('runner_on_3b');
-					let outs = game.status.o;
-					if (outs == 3)
-						outs = 2;
-					let home_icon = top ? ` <img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> ` : "";
-					let away_icon = top ? "" : ` <img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> `;
 					if (game.linescore.h.home > 0){
 						display(false, {"nh":0, "pg":0}, game);
 					} else {
@@ -107,6 +99,8 @@ function get_icons(home, game){
 	let base_state = Object.keys(game.runners_on_base);
 	let bases = 1*base_state.includes('runner_on_1b')+2*base_state.includes('runner_on_2b')+4*base_state.includes('runner_on_3b');
 	let outs = game.status.o;
+	if (outs == 3)
+		outs = 2;
 	return top == home ? ` <img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> ` : "";					
 }
 
