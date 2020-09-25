@@ -46,6 +46,17 @@ function main(){
 						document.getElementById(away).innerHTML = `${away}- ${game.status.status}`;
 						document.getElementById(home).innerHTML = `${home}- ${game.status.status}`;
 					}
+				} else if (game.status.status == 'In Progress'){
+					if (game.linescore.h.home > 0){
+						display(false, {"nh":0, "pg":0}, game);
+					} else {
+						get_calc_and_display(game, false);
+					}
+					if (game.linescore.h.away > 0){
+						display(true, {"nh":0, "pg":0}, game);
+					} else {
+						get_calc_and_display(game, true);
+					}
 				} else if (["Pre-Game", "Preview", "Warmup"].includes(game.status.status)){
 					if (game.game_nbr == 1){
 						let gametime = `${game.time} ${game.time_zone}`;// | <a href=${game2link(game)}>${game.status.status}</a>`
@@ -58,17 +69,9 @@ function main(){
 					let pg = game.status.is_perfect_game == "Y";
 					display(false, {"nh":away_nh, "pg":away_nh&&pg}, game);
 					display(true, {"nh":home_nh, "pg":home_nh&&pg}, game);
-				} else {
-					if (game.linescore.h.home > 0){
-						display(false, {"nh":0, "pg":0}, game);
-					} else {
-						get_calc_and_display(game, false);
-					}
-					if (game.linescore.h.away > 0){
-						display(true, {"nh":0, "pg":0}, game);
-					} else {
-						get_calc_and_display(game, true);
-					}
+				} else { 
+					document.getElementById(away).innerHTML = `${away}- (${PP(false, game)} \u2022 <a href=${game2link(game)}>@${home}</a>) | ${game.status.status}`;
+					document.getElementById(home).innerHTML = `${home}- (${PP(true, game)} \u2022 <a href=${game2link(game)}>${away}</a>) | ${game.status.status}`;
 				}
 			}
 			// dummy_display()
@@ -94,13 +97,18 @@ function game2link(game){
 }
 
 
-function get_icons(home, game){
+function get_icons(home, game, boxscore=null){
 	let top = game.status.top_inning == 'Y';
 	let base_state = Object.keys(game.runners_on_base);
 	let bases = 1*base_state.includes('runner_on_1b')+2*base_state.includes('runner_on_2b')+4*base_state.includes('runner_on_3b');
 	let outs = game.status.o;
 	if (outs == 3)
 		outs = 2;
+	if (boxscore != null){
+		let ha = home ? 'home' : 'away';
+		let IP = boxscore['teams'][ha]['teamStats']['pitching']['inningsPitched'];
+		outs = IP.split('.')[1];
+	}
 	return top == home ? ` <img src="icons/bases${bases}.jpg" alt="" width="20" height="20" style="vertical-align:bottom"> <img src="icons/outs${outs}.jpg" alt="" width="10" height="20" style="vertical-align:bottom"> ` : "";					
 }
 
@@ -120,7 +128,7 @@ function display(home, odds, game, boxscore=null){
 	else {
 		let top = game.status.top_inning == 'Y' ? 'Top' : 'Bottom';
 		status = `${top} ${game.status.inning}`;
-		icon = get_icons(home, game);
+		icon = get_icons(home, game, boxscore);
 	}
 	let pitcher = game_pitcher(home, game);
 	let is_combined = "";
