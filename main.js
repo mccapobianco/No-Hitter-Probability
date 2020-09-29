@@ -1,7 +1,7 @@
 const LEAGUE_AVG = 0.240;
 const LEAGUE_OBP = 0.320;
 const LEAGUE_FLD = 0.985;
-const AUTO_REFRESH = 10000;
+const AUTO_REFRESH = 10000000;
 var BATTER_PROJECTIONS = {};
 var PITCHER_PROJECTIONS = {};
 var INTERVAL;
@@ -300,11 +300,17 @@ function id2stats(playerid, boxscore, batter=true, use_regress=true, home=true){
 	let ha = home != batter ? "home" : "away";
 	let bp = batter ? "batting" : "pitching";
 	let player = boxscore["teams"][ha]["players"][`ID${playerid}`]['seasonStats'][bp];
+	let has_at_bats = true;
 	if (!batter){
+		if (player.atBats == 0){
+			player.avg = 0;
+			player.plateAppearances	=0;
+		} else {
 		player.avg = player.hits/player.atBats;
 		player.plateAppearances = player.atBats+player.baseOnBalls+player.hitByPitch;
+			}
 	}
-	if (typeof proj === 'undefined'){
+	if (typeof proj === 'undefined' || !has_at_bats	){
 		proj = {};
 		proj.AVG = LEAGUE_AVG;
 		proj.OBP = LEAGUE_OBP;
