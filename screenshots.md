@@ -1,6 +1,9 @@
 # Screenshots 
 ---
 ##### [See this project on GitHub pages](https://mccapobianco.github.io/No-Hitter-Probability/)
+### Example from 9/25/2020
+![](./screenshots/92520201.PNG)
+
 ### Example from 9/20/2020
 ![](./screenshots/92020201.PNG)
 
