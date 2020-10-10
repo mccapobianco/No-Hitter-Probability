@@ -36,6 +36,8 @@ function main(){
 	$.get(link, 
 		function(data){
 			let games = data.data.games.game;
+			if (games.length == undefined)
+				games = [games];
 			let odds = {};
 			for (let i = 0; i < games.length; i++) {
 				let game = games[i];
