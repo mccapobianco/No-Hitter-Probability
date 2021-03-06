@@ -2,6 +2,7 @@ const LEAGUE_AVG = 0.240;
 const LEAGUE_OBP = 0.320;
 const LEAGUE_FLD = 0.985;
 const AUTO_REFRESH = 10000;
+const FINAL_STRS = ['Final', 'Game Over', 'Final: Tied', 'Completed Early'];
 var BATTER_PROJECTIONS = {};
 var PITCHER_PROJECTIONS = {};
 var INTERVAL;
@@ -65,7 +66,7 @@ function main(){
 						document.getElementById(away).innerHTML = `${away}- (${PP(false, game)} \u2022 <a href=${game2link(game)}>@${home}</a>) | ${gametime}`;
 						document.getElementById(home).innerHTML = `${home}- (${PP(true, game)} \u2022 <a href=${game2link(game)}>${away}</a>) | ${gametime}`;
 					}
-				} else if (["Final", "Game Over"].includes(game.status.status)){
+				} else if (FINAL_STRS.includes(game.status.status)){
 					let home_nh = game.linescore.h.away == 0;
 					let away_nh = game.linescore.h.home == 0;
 					let pg = game.status.is_perfect_game == "Y";
@@ -124,7 +125,7 @@ function display(home, odds, game, boxscore=null){
 	let status = '';
 	let link = game2link(game);
 	let icon = "";
-	if (['Final', 'Game Over'].includes(game.status.status)){
+	if (FINAL_STRS.includes(game.status.status)){
 		status = 'Final';
 	}
 	else {
@@ -323,6 +324,9 @@ function id2stats(playerid, boxscore, batter=true, use_regress=true, home=true){
 }
 
 function final_pitcher(home, game){
+	if (game.status.status == 'Final: Tied'){
+		return "";
+	}
 	let runs = game.linescore.r;
 	let home_w = parseInt(runs.home) > parseInt(runs.away);
 	let pitcher = home_w == home ? game.winning_pitcher : game.losing_pitcher;
@@ -330,7 +334,7 @@ function final_pitcher(home, game){
 }
 
 function game_pitcher(home, game){
-	if (["Game Over", "Final"].includes(game.status.status)){
+	if (FINAL_STRS.includes(game.status.status)){
 		return final_pitcher(home, game);
 	}
 	let on_mound = (game.status.top_inning == 'Y') == home;
@@ -371,5 +375,6 @@ $.get(`https://raw.githubusercontent.com/mccapobianco/No-Hitter-Probability/mast
 		);
 	}
 );
+
 
 //TODO double plays, caught stealing, extra innings, runs scored
