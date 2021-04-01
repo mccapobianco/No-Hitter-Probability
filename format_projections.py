@@ -2,7 +2,7 @@ import pybaseball
 import pandas as pd
 import json
 #projections from steamer
-YEAR = 2020
+YEAR = 2021
 
 def xOBP(WHIP):
 	x = WHIP/(WHIP+3)
