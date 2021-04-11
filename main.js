@@ -24,6 +24,8 @@ function today_link(){
 function PP(home, game){
 	let ha = home ? "home" : "away";
 	let pp = game[`${ha}_probable_pitcher`];
+	if (pp == undefined)
+		return null;
 	if (pp.id == "")
 		return "TBD";
 	return `${pp.first} ${pp.last}`;
@@ -72,9 +74,16 @@ function main(){
 					let pg = game.status.is_perfect_game == "Y";
 					display(false, {"nh":away_nh, "pg":away_nh&&pg}, game);
 					display(true, {"nh":home_nh, "pg":home_nh&&pg}, game);
-				} else { 
-					document.getElementById(away).innerHTML = `${away}- (${PP(false, game)} \u2022 <a href=${game2link(game)}>@${home}</a>) | ${game.status.status}`;
-					document.getElementById(home).innerHTML = `${home}- (${PP(true, game)} \u2022 <a href=${game2link(game)}>${away}</a>) | ${game.status.status}`;
+				} else {
+					let away_p = PP(false, game);
+					if (away_p == null){
+						away_p = game_pitcher(false,game);
+					}
+					let home_p = PP(true, game);
+					if (home_p == null)
+						home_p = game_pitcher(true,game);
+					document.getElementById(away).innerHTML = `${away}- (${away_p} \u2022 <a href=${game2link(game)}>@${home}</a>) | ${game.status.status}`;
+					document.getElementById(home).innerHTML = `${home}- (${home_p} \u2022 <a href=${game2link(game)}>${away}</a>) | ${game.status.status}`;
 				}
 			}
 			// dummy_display()
