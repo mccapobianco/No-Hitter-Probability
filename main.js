@@ -2,7 +2,7 @@ const LEAGUE_AVG = 0.240;
 const LEAGUE_OBP = 0.320;
 const LEAGUE_FLD = 0.985;
 const AUTO_REFRESH = 10000;
-const FINAL_STRS = ['Final', 'Game Over', 'Final: Tied', 'Completed Early'];
+const FINAL_STRS = ['Final', 'Game Over', 'Final: Tied', 'Completed Early', 'Completed Early: Rain'];
 var BATTER_PROJECTIONS = {};
 var PITCHER_PROJECTIONS = {};
 var INTERVAL;
